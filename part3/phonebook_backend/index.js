@@ -41,6 +41,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json()) // implementing json-parser
+
 let persons = [
     {
       "id": "1",
@@ -63,6 +65,11 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
+
+
+const generateId = () => {
+  return Math.floor(Math.random() * 10e6)
+}
 
 app.get('/api/persons', (request, response) => response.json(persons))
 
@@ -93,6 +100,37 @@ app.delete('/api/persons/:id', (request, response) => {
     response.statusMessage = "No such record found"
     response.status(404).end()
   }
+})
+
+app.post('/api/persons', (request, response) => {
+
+
+  const {name, number} = request.body
+  // console.log(`Name ${name}, Number ${number}`)
+  // console.log(request.body)
+
+  if (!name || !number){
+    return response.status(400).json({
+      error: "name and number must be entered"
+    })
+  }
+
+  const isFound = persons.find(person => person.name === name)
+
+  if (isFound){
+    return response.status(400).json({
+      error: "name must be unique"
+    })
+  }
+
+  const newPerson = {
+    id: generateId(),
+    name: name,
+    number: number
+  }
+
+  persons = persons.concat(newPerson)
+  response.json(persons)
 })
 
 app.get('/api/info', (request, response) => {
