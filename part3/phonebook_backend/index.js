@@ -66,5 +66,12 @@ const persons = [
 
 app.get('/api/persons', (request, response) => response.json(persons))
 
+app.get('/api/info', (request, response) => {
+  const time = new Date().toString()
+  console.log(time)
+
+  response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${time}</p>`)
+})
+
 const PORT = 3001
 app.listen(PORT, () => console.log(`express server is running on ${PORT}`))
