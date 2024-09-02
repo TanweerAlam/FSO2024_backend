@@ -41,7 +41,7 @@
 const express = require('express')
 const app = express()
 
-const persons = [
+let persons = [
     {
       "id": "1",
       "name": "Arto Hellas",
@@ -80,6 +80,19 @@ app.get('/api/persons/:id', (request, response) => {
     response.status(404).end()
   }
 
+})
+
+app.delete('/api/persons/:id', (request, response) => {
+  const id = request.params.id
+  const isFound = persons.find(person => person.id === id)
+
+  if (isFound){
+    persons = persons.filter(person => person.id !== id)
+    response.sendStatus(204)
+  } else {
+    response.statusMessage = "No such record found"
+    response.status(404).end()
+  }
 })
 
 app.get('/api/info', (request, response) => {
