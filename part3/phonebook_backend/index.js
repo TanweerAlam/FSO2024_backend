@@ -43,6 +43,34 @@ const app = express()
 
 app.use(express.json()) // implementing json-parser
 
+// Using morgan middleware
+const morgan = require('morgan')
+// defining a new token to extend morgan 'tiny' format
+morgan.token('body', (request, response) => request.method === 'POST' && JSON.stringify(request.body))
+// definition ends here
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body') )
+// Implementing morgan by extend tiny configuration with :body
+
+// Making own middleware to log details of request being sent
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path: ', request.path)
+  console.log('Body: ', request.body)
+  console.log('---')
+  next()
+}
+// requestLogger middleware defined here
+
+app.use(requestLogger) //implementing own-made middleware "requestLogger"
+
+// defined middleware to catch non-existent routes requests
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({
+    error: "unknown endpoint"
+  })
+}
+// above mentioned a middleware to handle non-existing routes
+
 let persons = [
     {
       "id": "1",
@@ -66,11 +94,11 @@ let persons = [
     }
 ]
 
-
 const generateId = () => {
   return Math.floor(Math.random() * 10e6)
 }
 
+// app routes
 app.get('/api/persons', (request, response) => response.json(persons))
 
 app.get('/api/persons/:id', (request, response) => {
@@ -139,6 +167,11 @@ app.get('/api/info', (request, response) => {
 
   response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${time}</p>`)
 })
+// app routes end here
+
+app.use(unknownEndpoint)
+//implementing unknownEndpoint middleware below routes so
+// that it could catch routes that arent mentioned above
 
 const PORT = 3001
 app.listen(PORT, () => console.log(`express server is running on ${PORT}`))
