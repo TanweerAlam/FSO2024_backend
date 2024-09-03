@@ -65,9 +65,9 @@ let notes = [
     return String(maxId + 1)
   }
 
-  app.get('/', (request, response) => {
-    response.send('<h1>Hello, world! The app has started.</h1>')
-  })
+  // app.get('/', (request, response) => {
+  //   response.send('<h1>Hello, world! The app has started.</h1>')
+  // })
 
   app.get('/api/notes', (request, response) => {
     response.json(notes)
