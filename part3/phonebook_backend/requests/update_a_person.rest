@@ -1,0 +1,7 @@
+PUT http://localhost:3001/api/persons/66e165584cf4d1a23fd38d7e HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Anneliese Louis Van Der Pol",
+    "number": "362-6836261"
+}

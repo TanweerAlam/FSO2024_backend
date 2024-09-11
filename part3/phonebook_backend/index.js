@@ -42,6 +42,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const Person = require('./models/phonebook')
+const errorHandler = require('./middleware/ErrorHandler.middleware')
 
 app.use(cors())
 app.use(express.static('dist'))
@@ -189,7 +190,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 // *********Updated post request for person creation in db************
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const {name, number} = request.body
   console.log(name, number)
 
@@ -199,14 +200,37 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
-  const person = new Person({
+  const newPerson = new Person({
     name: name,
     number: number,
   })
-  person.save()
-    .then(savedPerson => {
-      response.json(savedPerson)
+
+  Person.findOneAndUpdate({ name: name }, {$set: {number: number}}, {new: true, upsert: true})
+    .then(result => response.json(result))
+    .catch(error => next(error))
+
+  // person.save()
+  //   .then(savedPerson => {
+  //     response.json(savedPerson)
+  //   })
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+
+  const id = request.params.id
+  const {name, number} = request.body
+
+  const newPerson = {
+    name: name,
+    number: number
+  }
+
+  Person.findByIdAndUpdate(id, newPerson, {new: true})
+    .then(updatedPerson => {
+      console.log("Updated person: ", JSON.stringify(updatedPerson))
+      response.json(updatedPerson)
     })
+    .catch(error => next(error))
 })
 
 app.get('/api/info', (request, response) => {
@@ -223,15 +247,15 @@ app.use(unknownEndpoint)
 
 
 // ************errorHandler middleware**********
-const errorHandler = (error, request, response, next) => {
-  console.log(error.message)
+// const errorHandler = (error, request, response, next) => {
+//   console.log(error.message)
 
-  if (error.name === "CastError"){
-    response.status(400).send({ error: "malformated id" })
-  }
+//   if (error.name === "CastError"){
+//     response.status(400).send({ error: "malformated id" })
+//   }
 
-  next(error)
-}
+//   next(error)
+// }
 // ************using errorHandler as last middleware**********
 
 app.use(errorHandler)
