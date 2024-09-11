@@ -41,14 +41,14 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const Person = require('./models/phonebook')
 
 app.use(cors())
 app.use(express.static('dist'))
-
 app.use(express.json()) // implementing json-parser
-
 // Using morgan middleware
 const morgan = require('morgan')
+const { default: mongoose } = require('mongoose')
 // defining a new token to extend morgan 'tiny' format
 morgan.token('body', (request, response) => request.method === 'POST' && JSON.stringify(request.body))
 // definition ends here
@@ -64,7 +64,6 @@ const requestLogger = (request, response, next) => {
   next()
 }
 // requestLogger middleware defined here
-
 app.use(requestLogger) //implementing own-made middleware "requestLogger"
 
 // defined middleware to catch non-existent routes requests
@@ -103,66 +102,111 @@ const generateId = () => {
 }
 
 // app routes
-app.get('/api/persons', (request, response) => response.json(persons))
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then(result => {
+    response.json(result)
+  })
+})
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
 
-  const person = persons.find(person => person.id === id)
+  // const person = persons.find(person => person.id === id)
 
-  console.log("Requested id", id, person)
+  // console.log("Requested id", id, person)
 
-  if (person) {
-    response.json(person)
-  } else {
-    response.statusMessage = "Requested ID not found"
-    response.status(404).end()
-  }
+  // if (person) {
+  //   response.json(person)
+  // } else {
+  //   response.statusMessage = "Requested ID not found"
+  //   response.status(404).end()
+  // }
+
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    // .catch(error => {
+    //   console.log(error)
+    //   response.status(400).send({ error: "malformatted id" })
+    // })
+    .catch(error => next(error))
 
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
-  const isFound = persons.find(person => person.id === id)
+  // const isFound = persons.find(person => person.id === id)
 
-  if (isFound){
-    persons = persons.filter(person => person.id !== id)
-    response.sendStatus(204)
-  } else {
-    response.statusMessage = "No such record found"
-    response.status(404).end()
-  }
+  Person.findByIdAndDelete(id)
+    .then(result => {
+      response.json(result)
+    })
+    .catch(error => next(error))
+
+  // if (isFound){
+  //   persons = persons.filter(person => person.id !== id)
+  //   response.sendStatus(204)
+  // } else {
+  //   response.statusMessage = "No such record found"
+  //   response.status(404).end()
+  // }
 })
+
+// app.post('/api/persons', (request, response) => {
+
+//   const {name, number} = request.body
+//   // console.log(`Name ${name}, Number ${number}`)
+//   // console.log(request.body)
+
+//   if (!name || !number){
+//     return response.status(400).json({
+//       error: "name and number must be entered"
+//     })
+//   }
+
+//   const isFound = persons.find(person => person.name === name)
+
+//   if (isFound){
+//     return response.status(400).json({
+//       error: "name must be unique"
+//     })
+//   }
+
+//   const newPerson = {
+//     id: generateId(),
+//     name: name,
+//     number: number
+//   }
+
+//   persons = persons.concat(newPerson)
+//   response.json(persons)
+// })
+
+// *********Updated post request for person creation in db************
 
 app.post('/api/persons', (request, response) => {
-
-
   const {name, number} = request.body
-  // console.log(`Name ${name}, Number ${number}`)
-  // console.log(request.body)
+  console.log(name, number)
 
-  if (!name || !number){
+  if (!name && !number) {
     return response.status(400).json({
-      error: "name and number must be entered"
+      error: "name and number must be enetered"
     })
   }
 
-  const isFound = persons.find(person => person.name === name)
-
-  if (isFound){
-    return response.status(400).json({
-      error: "name must be unique"
-    })
-  }
-
-  const newPerson = {
-    id: generateId(),
+  const person = new Person({
     name: name,
-    number: number
-  }
-
-  persons = persons.concat(newPerson)
-  response.json(persons)
+    number: number,
+  })
+  person.save()
+    .then(savedPerson => {
+      response.json(savedPerson)
+    })
 })
 
 app.get('/api/info', (request, response) => {
@@ -176,6 +220,21 @@ app.get('/api/info', (request, response) => {
 app.use(unknownEndpoint)
 //implementing unknownEndpoint middleware below routes so
 // that it could catch routes that arent mentioned above
+
+
+// ************errorHandler middleware**********
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name === "CastError"){
+    response.status(400).send({ error: "malformated id" })
+  }
+
+  next(error)
+}
+// ************using errorHandler as last middleware**********
+
+app.use(errorHandler)
 
 const PORT = 3001
 app.listen(PORT, () => console.log(`express server is running on ${PORT}`))

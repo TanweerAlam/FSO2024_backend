@@ -2,6 +2,6 @@ POST http://localhost:3001/api/persons HTTP/1.1
 content-type: application/json
 
 {
-    "name": "Sumayya Baksh",
-    "number": "161-5672349"
+    "name": "Sumayraa Farooqui",
+    "number": "651-5672349"
 }
