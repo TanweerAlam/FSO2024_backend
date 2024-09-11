@@ -2,6 +2,6 @@ POST http://localhost:3001/api/notes HTTP/1.1
 content-type: application/json
 
 {
-    "content": "Postman is good in testing but I am using REST Client",
-    "important": true
+    "content": "Nodejs along Express allows to build robust system",
+    "important": false
 }

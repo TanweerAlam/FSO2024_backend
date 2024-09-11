@@ -34,6 +34,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const Note = require('./models/note')
+const errorHandler = require('./middleware/ErrorHandler.middleware')
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method)
@@ -43,9 +44,12 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
+
 app.use(express.json())
 app.use(cors())
 app.use(express.static('dist'))
+
+app.use(errorHandler)
 
 const generateId = () => {
   const maxId = notes.length > 0
@@ -65,7 +69,7 @@ app.get('/api/notes', (request, response) => {
   })
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   const id = request.params.id
   // const note = notes.find(note => note.id === id)
 
@@ -95,7 +99,7 @@ app.delete('/api/notes/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/notes', (request, response) => {
+app.post('/api/notes', (request, response, next) => {
   const body = request.body
 
   if (!body.content) {
@@ -119,9 +123,11 @@ app.post('/api/notes', (request, response) => {
     important: Boolean(body.important) || false,
   })
 
-  note.save().then(savedNote => {
-    response.json(savedNote)
-  })
+  note.save()
+    .then(savedNote => {
+      response.json(savedNote)
+    })
+    .catch(error => next(error))
 })
 
 app.put('/api/notes/:id', (request, response, next) => {
@@ -133,7 +139,10 @@ app.put('/api/notes/:id', (request, response, next) => {
     important: body.important,
   }
 
-  Note.findByIdAndUpdate(request.params.id, note, {new: true})
+  Note.findByIdAndUpdate(request.params.id,
+     note,
+     { new: true, runValidators: true, context: "query" }
+    )
     .then(updatedNote => {
       response.json(updatedNote)
     })
