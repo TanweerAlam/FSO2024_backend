@@ -192,27 +192,43 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 app.post('/api/persons', (request, response, next) => {
   const {name, number} = request.body
-  console.log(name, number)
+  console.log("Data posted: ", name, number)
 
-  if (!name && !number) {
+  if (!name || !number) {
     return response.status(400).json({
       error: "name and number must be enetered"
     })
   }
 
-  const newPerson = new Person({
-    name: name,
-    number: number,
-  })
+  Person.findOne({name: name})
+    .then(foundPerson => {
+      if (!foundPerson) {
+        console.log("Create new person")
 
-  Person.findOneAndUpdate({ name: name }, {$set: {number: number}}, {new: true, upsert: true})
-    .then(result => response.json(result))
+        const newPerson = new Person({
+          name: name,
+          number: number,
+        })
+
+        newPerson.save()
+          .then(savedPerson => response.status(201).json(savedPerson))
+          .catch(error => next(error))
+      }
+      else{
+
+        if (foundPerson.number !== number){
+
+          foundPerson.number = number
+          foundPerson.save()
+            .then(updatedPerson => response.status(200).json(updatedPerson))
+
+        } else {
+          return response.status(204).send({message: "User already exists"})
+        }
+
+      }
+    })
     .catch(error => next(error))
-
-  // person.save()
-  //   .then(savedPerson => {
-  //     response.json(savedPerson)
-  //   })
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -225,7 +241,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     number: number
   }
 
-  Person.findByIdAndUpdate(id, newPerson, {new: true})
+  Person.findByIdAndUpdate(id, newPerson, {new: true, runValidators: true, context: "query"})
     .then(updatedPerson => {
       console.log("Updated person: ", JSON.stringify(updatedPerson))
       response.json(updatedPerson)

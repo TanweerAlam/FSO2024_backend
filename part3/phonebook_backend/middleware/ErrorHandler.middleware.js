@@ -6,6 +6,9 @@ module.exports = errorHandler = (error, request, response, next) => {
             error: "malformated id"
         })
     }
+    if (error.name === "ValidationError"){
+        response.status(400).json({error: error.message})
+    }
 
     next(error)
 }
