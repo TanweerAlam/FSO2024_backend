@@ -37,10 +37,10 @@ const Note = require('./models/note')
 const errorHandler = require('./middleware/ErrorHandler.middleware')
 
 const requestLogger = (request, response, next) => {
-  console.log("Method:", request.method)
-  console.log("Path:", request.path)
-  console.log("Body:", request.body)
-  console.log("---")
+  console.log('Method:', request.method)
+  console.log('Path:', request.path)
+  console.log('Body:', request.body)
+  console.log('---')
   next()
 }
 
@@ -53,8 +53,8 @@ app.use(errorHandler)
 
 const generateId = () => {
   const maxId = notes.length > 0
-  ? Math.max(...notes.map(n => Number(n.id)))
-  : 0
+    ? Math.max(...notes.map(n => Number(n.id)))
+    : 0
 
   return String(maxId + 1)
 }
@@ -78,8 +78,8 @@ app.get('/api/notes/:id', (request, response, next) => {
       if (note){
         response.json(note)
       } else {
-          // response.statusMessage = "Item NOT FOUND"
-          response.status(404).end()
+        // response.statusMessage = "Item NOT FOUND"
+        response.status(404).end()
       }
     })
     .catch(error => next(error))
@@ -140,9 +140,9 @@ app.put('/api/notes/:id', (request, response, next) => {
   }
 
   Note.findByIdAndUpdate(request.params.id,
-     note,
-     { new: true, runValidators: true, context: "query" }
-    )
+    note,
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedNote => {
       response.json(updatedNote)
     })
