@@ -70,37 +70,10 @@ app.use(requestLogger) //implementing own-made middleware "requestLogger"
 // defined middleware to catch non-existent routes requests
 const unknownEndpoint = (request, response) => {
   response.status(404).send({
-    error: "unknown endpoint"
+    error: 'unknown endpoint'
   })
 }
 // above mentioned a middleware to handle non-existing routes
-
-let persons = [
-    {
-      "id": "1",
-      "name": "Arto Hellas",
-      "number": "040-123456"
-    },
-    {
-      "id": "2",
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523"
-    },
-    {
-      "id": "3",
-      "name": "Dan Abramov",
-      "number": "12-43-234345"
-    },
-    {
-      "id": "4",
-      "name": "Mary Poppendieck",
-      "number": "39-23-6423122"
-    }
-]
-
-const generateId = () => {
-  return Math.floor(Math.random() * 10e6)
-}
 
 // app routes
 app.get('/api/persons', (request, response) => {
@@ -158,52 +131,20 @@ app.delete('/api/persons/:id', (request, response, next) => {
   // }
 })
 
-// app.post('/api/persons', (request, response) => {
-
-//   const {name, number} = request.body
-//   // console.log(`Name ${name}, Number ${number}`)
-//   // console.log(request.body)
-
-//   if (!name || !number){
-//     return response.status(400).json({
-//       error: "name and number must be entered"
-//     })
-//   }
-
-//   const isFound = persons.find(person => person.name === name)
-
-//   if (isFound){
-//     return response.status(400).json({
-//       error: "name must be unique"
-//     })
-//   }
-
-//   const newPerson = {
-//     id: generateId(),
-//     name: name,
-//     number: number
-//   }
-
-//   persons = persons.concat(newPerson)
-//   response.json(persons)
-// })
-
-// *********Updated post request for person creation in db************
-
 app.post('/api/persons', (request, response, next) => {
-  const {name, number} = request.body
-  console.log("Data posted: ", name, number)
+  const { name, number } = request.body
+  console.log('Data posted: ', name, number)
 
   if (!name || !number) {
     return response.status(400).json({
-      error: "name and number must be enetered"
+      error: 'name and number must be enetered'
     })
   }
 
-  Person.findOne({name: name})
+  Person.findOne({ name: name })
     .then(foundPerson => {
       if (!foundPerson) {
-        console.log("Create new person")
+        console.log('Create new person')
 
         const newPerson = new Person({
           name: name,
@@ -223,7 +164,7 @@ app.post('/api/persons', (request, response, next) => {
             .then(updatedPerson => response.status(200).json(updatedPerson))
 
         } else {
-          return response.status(204).send({message: "User already exists"})
+          return response.status(204).send({ message: 'User already exists' })
         }
 
       }
@@ -234,16 +175,16 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
 
   const id = request.params.id
-  const {name, number} = request.body
+  const { name, number } = request.body
 
   const newPerson = {
     name: name,
     number: number
   }
 
-  Person.findByIdAndUpdate(id, newPerson, {new: true, runValidators: true, context: "query"})
+  Person.findByIdAndUpdate(id, newPerson, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
-      console.log("Updated person: ", JSON.stringify(updatedPerson))
+      console.log('Updated person: ', JSON.stringify(updatedPerson))
       response.json(updatedPerson)
     })
     .catch(error => next(error))
@@ -258,21 +199,6 @@ app.get('/api/info', (request, response) => {
 // app routes end here
 
 app.use(unknownEndpoint)
-//implementing unknownEndpoint middleware below routes so
-// that it could catch routes that arent mentioned above
-
-
-// ************errorHandler middleware**********
-// const errorHandler = (error, request, response, next) => {
-//   console.log(error.message)
-
-//   if (error.name === "CastError"){
-//     response.status(400).send({ error: "malformated id" })
-//   }
-
-//   next(error)
-// }
-// ************using errorHandler as last middleware**********
 
 app.use(errorHandler)
 
