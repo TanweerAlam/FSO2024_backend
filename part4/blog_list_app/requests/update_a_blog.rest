@@ -1,8 +1,8 @@
-PUT http://localhost:3003/api/blogs/:id HTTP/1.1
+PUT http://localhost:3003/api/blogs/66ebd09a9bee08ac3c161b79 HTTP/1.1
 Content-Type: application/json
 
 {
-  "title": "The Dogmas of Faith",
+  "title": "Prodigy Programmers",
   "author": "TheTanweer",
   "url": "http://localhost:3003",
   "likes": 11981
