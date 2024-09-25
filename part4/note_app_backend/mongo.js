@@ -25,17 +25,17 @@ const noteSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', noteSchema)
 
 // eslint-disable-next-line no-unused-vars
-const note = new Note({
+// const note = new Note({
 
-  content: 'Browser can execute only JavaScript',
-  important: false
-})
+//   content: 'Browser can execute only JavaScript',
+//   important: false
+// })
 
 
-note.save().then(result => {
-  console.log('note saved!')
-  mongoose.connection.close()
-})
+// note.save().then(result => {
+//   console.log('note saved!')
+//   mongoose.connection.close()
+// })
 
 
 // Note.find({}).then(result => {
