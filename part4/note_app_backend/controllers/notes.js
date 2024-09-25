@@ -25,19 +25,30 @@ notesRouter.get('/', async (request, response) => {
 // })
 notesRouter.get('/:id', async (request, response, next) => {
   const id = request.params.id
-  try {
-    const note = await Note.findById(id)
-    if (note) {
-      response.json(note)
-    } else {
-      response.status(404).end()
-    }
-  } catch (exception) {
-    next(exception)
+
+  // ******** Route using async/await with try-catch ***********
+  // try {
+  //   const note = await Note.findById(id)
+  //   if (note) {
+  //     response.json(note)
+  //   } else {
+  //     response.status(404).end()
+  //   }
+  // } catch (exception) {
+  //   next(exception)
+  // }
+
+  // ********** Route after implementing the express-async-errors **********
+
+  const note = await Note.findById(id)
+  if (note) {
+    response.json(note)
+  } else {
+    response.status(404).end()
   }
 })
 
-notesRouter.post('/', async (request, response, next) => {
+notesRouter.post('/', async (request, response) => {
   const body = request.body
 
   const note = new Note({
@@ -45,19 +56,31 @@ notesRouter.post('/', async (request, response, next) => {
     important: body.important || false
   })
 
+  //  ********** Route using promises ********
+
   // note.save()
   //   .then(savedNote => {
   //     response.status(201).json(savedNote)
   //   })
   //   .catch(error => next(error))
-  try {
-    const savedNote = await note.save()
-    response.status(201).json(savedNote)
-  } catch (exception) {
-    next(exception)
-  }
+
+  // ****** Route  using async/await *********
+
+  // try {
+  //   const savedNote = await note.save()
+  //   response.status(201).json(savedNote)
+  // } catch (exception) {
+  //   next(exception)
+  // }
+
+  // ******** Route after implementing express-async-errors library *******
+
+  const savedNote = await note.save()
+  response.status(201).json(savedNote)
 
 })
+
+// ******* Route using promise******
 
 // notesRouter.delete('/:id', (request, response, next) => {
 //   Note.findByIdAndDelete(request.params.id)
@@ -66,29 +89,46 @@ notesRouter.post('/', async (request, response, next) => {
 //     })
 //     .catch(error => next(error))
 // })
-notesRouter.delete('/:id', async (request, response, next) => {
-  const id = request.params.id
-  try {
-    await Note.findByIdAndDelete(id)
-    response.status(204).end()
-  } catch (exception) {
-    next(exception)
-  }
+
+// ******* Route using async/await with try-catch ********
+
+// notesRouter.delete('/:id', async (request, response, next) => {
+//   const id = request.params.id
+//   try {
+//     await Note.findByIdAndDelete(id)
+//     response.status(204).end()
+//   } catch (exception) {
+//     next(exception)
+//   }
+// })
+
+// ******* Route using express-async-errors library and simplifying routes *******
+// Refactoring try-catch using express-async-errors library
+notesRouter.delete('/:id', async (request, response) => {
+  await Note.findByIdAndDelete(request.params.id)
+  response.status(204).end()
 })
 
-notesRouter.put('/:id', (request, response, next) => {
+
+notesRouter.put('/:id', async (request, response, next) => {
   const body = request.body
 
   const note = {
     content: body.content,
     important: body.important,
   }
+  // ******** Route using promises ***********
 
   Note.findByIdAndUpdate(request.params.id, note, { new: true })
     .then(updatedNote => {
       response.json(updatedNote)
     })
     .catch(error => next(error))
+
+  // // *******Route after implementing express-async-errors ***********
+
+  // const updatedNote = await Note.findByIdAndUpdate(request.params.id, note, { new: true })
+  // response.status(200).json(updatedNote)
 })
 
 module.exports = notesRouter
