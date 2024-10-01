@@ -23,7 +23,7 @@ notesRouter.get('/', async (request, response) => {
 //     })
 //     .catch(error => next(error))
 // })
-notesRouter.get('/:id', async (request, response, next) => {
+notesRouter.get('/:id', async (request, response) => {
   const id = request.params.id
 
   // ******** Route using async/await with try-catch ***********

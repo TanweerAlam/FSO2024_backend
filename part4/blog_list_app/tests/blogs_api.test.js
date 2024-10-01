@@ -1,4 +1,4 @@
-const { test, expect, beforeEach, after} = require('node:test')
+const { test, beforeEach, after, describe} = require('node:test')
 const assert = require('node:assert')
 const supertest = require('supertest')
 const app = require('../app')
@@ -21,96 +21,142 @@ beforeEach(async () => {
     console.log('done')
 })
 
-test.only('all blogs are retrieved', async () => {
-    await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/)
+describe('retrieval of blogs', () => {
+    test.only('all blogs are retrieved', async () => {
+        await api
+            .get('/api/blogs')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+    })
+
+    test.only('there are two blogs', async () => {
+        const result = await api.get('/api/blogs')
+        const resultBlogs = result.body
+
+        assert.strictEqual(resultBlogs.length, 2)
+    })
+
+    test.only('unique identifier id exists in every blogs', async () => {
+        const result = await api.get('/api/blogs')
+        const blogs = result.body
+
+        assert.ok((blogs && blogs.every(blog => blog && blog.id)))
+    })
 })
 
-test.only('there are two blogs', async () => {
-    const result = await api.get('/api/blogs')
-    const resultBlogs = result.body
+describe('addition of a new blog', () => {
+    test.only('succeeds with valid data', async () => {
+        const testBlog =     {
+            title: "test: a native node library",
+            author: "TheTanweer",
+            url: "http://localhost:3003",
+            likes: 741
+        }
 
-    assert.strictEqual(resultBlogs.length, 2)
+        await api
+            .post('/api/blogs')
+            .send(testBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const blogsAtEnd = await helper.blogsInDB()
+
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogObjects.length + 1)
+
+        const titles = blogsAtEnd.map(blog => blog.title)
+        assert(titles.includes(testBlog.title))
+    })
+
+    test.only('succeeds with 0 likes if no likes yet', async () => {
+        const testBlog =     {
+            title: "something you don't like",
+            author: "TheTanweer",
+            url: "http://localhost:3003",
+        }
+
+        const result = await api
+            .post('/api/blogs')
+            .send(testBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const savedBlog = result.body
+
+        // console.log('Saved blog in test', savedBlog)
+
+        const blogsAtEnd = await helper.blogsInDB()
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogObjects.length + 1)
+
+        const titles = blogsAtEnd.map(blog => blog.title)
+        assert(titles.includes(testBlog.title))
+
+        assert.equal(savedBlog.likes, 0)
+    })
+
+    test.only('fails with status code 400 if title or url is missing', async () => {
+        const testBlogOne =     {
+            author: "TheTanweer",
+            url: "http://localhost:3003",
+            likes: 741
+        }
+        const testBlogTwo =     {
+            title: "Psychoanalysis",
+            author: "TheTanweer",
+            likes: 741
+        }
+
+        assert(await api
+            .post('/api/blogs')
+            .send(testBlogOne)
+            .expect(400), 'blog with no title cannot exist')
+
+        assert(await api
+            .post('/api/blogs')
+            .send(testBlogTwo)
+            .expect(400), 'blog with no url cannot exist')
+    })
 })
 
-test.only('unique identifier id exists in every blogs', async () => {
-    const result = await api.get('/api/blogs')
-    const blogs = result.body
+describe('deletion of a blog', () => {
+    test('succeeds with status code 204 if id is valid', async () => {
+        const blogsAtStart = await helper.blogsInDB()
+        const blogsToDelete = blogsAtStart[0]
 
-    assert.ok((blogs && blogs.every(blog => blog && blog.id)))
+        await api
+            .delete(`/api/blogs/${blogsToDelete.id}`)
+            .expect(204)
+
+        const blogsAtEnd = await helper.blogsInDB()
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogObjects.length - 1)
+
+        const titles = blogsAtEnd.map(blog => blog.title)
+        assert(!titles.includes(blogsToDelete.title))
+    })
 })
 
-test.only('blog post created successfully', async () => {
-    const testBlog =     {
-        title: "test: a native node library",
-        author: "TheTanweer",
-        url: "http://localhost:3003",
-        likes: 741
-    }
+describe('updation of a blog', () => {
+    test('succeeds with status code 200 if id is valid', async () => {
+        const blogsAtStart = await helper.blogsInDB()
+        const blogToUpdate = blogsAtStart[0]
+        const newBlog = {
+            title: "Testing the updation",
+            author: "TheTanweer",
+            url: "https://localhost:3003",
+            like: 3986
+        }
+        const updatedBlog = await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(newBlog)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
 
-    await api
-        .post('/api/blogs')
-        .send(testBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
+        const blogsAtEnd = await helper.blogsInDB()
+        assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
 
-    const blogsAtEnd = await helper.blogsInDB()
-
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogObjects.length + 1)
-
-    const titles = blogsAtEnd.map(blog => blog.title)
-    assert(titles.includes(testBlog.title))
-})
-
-test.only('blog posts with no likes have 0 likes', async () => {
-    const testBlog =     {
-        title: "something you don't like",
-        author: "TheTanweer",
-        url: "http://localhost:3003",
-    }
-
-    const result = await api
-        .post('/api/blogs')
-        .send(testBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
-
-    const savedBlog = result.body
-
-    // console.log('Saved blog in test', savedBlog)
-
-    const blogsAtEnd = await helper.blogsInDB()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogObjects.length + 1)
-
-    const titles = blogsAtEnd.map(blog => blog.title)
-    assert(titles.includes(testBlog.title))
-
-    assert.equal(savedBlog.likes, 0)
-})
-
-test.only('blog with no title or url cannot exist', async () => {
-    const testBlogOne =     {
-        author: "TheTanweer",
-        url: "http://localhost:3003",
-        likes: 741
-    }
-    const testBlogTwo =     {
-        title: "Psychoanalysis",
-        author: "TheTanweer",
-        likes: 741
-    }
-
-    assert(await api
-        .post('/api/blogs')
-        .send(testBlogOne)
-        .expect(400), 'blog with no title cannot exist')
-
-    assert(await api
-        .post('/api/blogs')
-        .send(testBlogTwo)
-        .expect(400), 'blog with no url cannot exist')
+        const titles = (await blogsAtEnd).map(blog => blog.title)
+        assert(titles.includes(newBlog.title))
+        assert(!titles.includes(blogToUpdate.title))
+    })
 })
 
 after(async () => {

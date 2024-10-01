@@ -110,9 +110,8 @@ router.delete('/:id', async (request, response) => {
 router.put('/:id', async (request, response) => {
     const { id } = request.params
     const { body } = request
-    const blog = new Blog(body)
 
-    const updatedBlog = await Blog.findByIdAndUpdate(id, blog, { new: true })
+    const updatedBlog = await Blog.findByIdAndUpdate(id, body, { new: true })
     response.status(200).json(updatedBlog)
 })
 
