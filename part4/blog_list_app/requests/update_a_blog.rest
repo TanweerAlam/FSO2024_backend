@@ -1,9 +1,11 @@
-PUT http://localhost:3003/api/blogs/66ebd09a9bee08ac3c161b79 HTTP/1.1
+PUT http://localhost:3003/api/blogs/670a51c2b95095ad82315e23 HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY3MDNiMjllNWNhMjU3MTk5YTRjOWMyYiIsImlhdCI6MTcyODg5OTEzMX0.-pb_sW7RXcOzibL2yortnAX5TIuMUaU-NpCgCFjDNiE
+
 
 {
-  "title": "Prodigy Programmers",
-  "author": "TheTanweer",
+  "title": "Gradually Expanding Universe",
+  "author": "root",
   "url": "http://localhost:3003",
-  "likes": 11981
+  "likes": 1
 }

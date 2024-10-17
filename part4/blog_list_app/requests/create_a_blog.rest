@@ -1,9 +1,11 @@
 POST http://localhost:3003/api/blogs HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY3MDNiMjllNWNhMjU3MTk5YTRjOWMyYiIsImlhdCI6MTcyODg5OTEzMX0.-pb_sW7RXcOzibL2yortnAX5TIuMUaU-NpCgCFjDNiE
+
 
 {
-  "title": "Psychoanalysis of jeopardy",
+  "title": "Shayatin and Whispers",
   "author": "TheTanweer",
   "url": "http://localhost:3003",
-  "likes": 11981
+  "likes": 234254
 }
