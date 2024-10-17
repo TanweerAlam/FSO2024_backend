@@ -171,6 +171,15 @@ describe('deletion of a blog', () => {
         const titles = blogsAtEnd.map(blog => blog.title)
         assert(!titles.includes(blogsToDelete.title))
     })
+
+    test('fails with status code 401 Unauthorized if a token is not provided', async () => {
+        const blogsAtStart = await helper.blogsInDB()
+        const blogToDelete = blogsAtStart[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(401)
+    })
 })
 
 describe('updation of a blog', () => {
